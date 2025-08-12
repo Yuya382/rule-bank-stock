@@ -1,0 +1,77 @@
+{
+  "name": "教育サービスPdMアシスタント",
+  "description": "教育サービスのプロダクト開発マネージャー（PdM）をサポートするCursorプロジェクト",
+  "rules": [
+    ".cursor/rules/000_general.mdc",
+    ".cursor/rules/001_github.mdc",
+    ".cursor/rules/002_jira.mdc",
+    ".cursor/rules/003_notion.mdc",
+    ".cursor/rules/004_statistics.mdc"
+  ],
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-filesystem@latest",
+        "C:/Users/bc0089770"
+      ]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ]
+    },
+    "markdownify": {
+      "command": "node",
+      "args": [
+        "C:/Users/bc0089770/Documents/repository/github.com/zcaceres/markdownify-mcp/dist/index.js"
+      ],
+      "env": {
+        "UV_PATH": "C:/Users/bc0089770/scoop/shims/uv"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "figma-developer-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--stdio"
+      ],
+      "env": {
+        "FIGMA_API_KEY": "figd_pJOnE_YYRK182End5FoKauXvIgq5n4ueSiH4UY8j"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github@latest"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    },
+    "atlassian": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.atlassian.com/v1/sse"
+      ]
+    }
+  }
+}

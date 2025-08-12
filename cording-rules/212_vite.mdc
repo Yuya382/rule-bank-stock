@@ -1,0 +1,158 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# Viteルール
+
+## 基本原則
+
+- 高速な開発サーバーを活用
+- ESModulesを利用した最適化
+- プラグインエコシステムを活用
+- 本番ビルドでの最適化
+
+## プロジェクト設定
+
+### vite.config.ts
+
+```typescript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@components': resolve(__dirname, './src/components'),
+      '@utils': resolve(__dirname, './src/utils'),
+      '@types': resolve(__dirname, './src/types'),
+    },
+  },
+  server: {
+    port: 3000,
+    open: true,
+    host: true,
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          utils: ['lodash', 'date-fns'],
+        },
+      },
+    },
+  },
+  css: {
+    postcss: './postcss.config.js',
+  },
+});
+```
+
+## 環境変数
+
+```typescript
+// .env
+VITE_API_URL=https://api.example.com
+VITE_APP_TITLE=My App
+
+// 使用方法
+const apiUrl = import.meta.env.VITE_API_URL;
+const appTitle = import.meta.env.VITE_APP_TITLE;
+```
+
+## 推奨プラグイン
+
+```typescript
+// 必須プラグイン
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
+
+// 開発効率向上
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import checker from 'vite-plugin-checker';
+import { visualizer } from 'rollup-plugin-visualizer';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    checker({
+      typescript: true,
+      eslint: {
+        lintCommand: 'eslint "./src/**/*.{ts,tsx}"',
+      },
+    }),
+    visualizer({
+      filename: 'dist/stats.html',
+      open: true,
+    }),
+  ],
+});
+```
+
+## 最適化設定
+
+### バンドル最適化
+
+```typescript
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) {
+              return 'react';
+            }
+            if (id.includes('lodash')) {
+              return 'lodash';
+            }
+            return 'vendor';
+          }
+        },
+      },
+    },
+  },
+});
+```
+
+## 開発サーバー設定
+
+```typescript
+export default defineConfig({
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
+});
+```
+
+## パフォーマンス最適化
+
+1. **動的インポート**: 必要に応じてコード分割
+2. **バンドル分析**: visualizerプラグインを使用
+3. **キャッシュ戦略**: 適切なキャッシュ設定
+4. **プリロード**: 重要なリソースの先読み
+
+## ベストプラクティス
+
+- 環境変数は`VITE_`プレフィックスを使用
+- 開発時のホットリロードを活用
+- 本番ビルドでの最適化を忘れずに
+- プラグインは必要最小限に留める

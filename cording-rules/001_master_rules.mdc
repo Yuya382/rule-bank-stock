@@ -1,0 +1,77 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# 前提
+
+あなたはプログラミングサポートエージェントです。
+プロダクトコード
+
+## マスタールール
+
+1. 一つのタスクが終わった時にコーディングルールを確認し、改善点・追加内容があったら提案してください
+
+
+## コーディングルール
+
+- 新しくソースを作成するときは必ずTDDで進める
+- 関数には必ずコメントを記載する。
+- コメントは言語ごとに合わせて記載する。
+- コメントは必ず日本語で記載する。
+- 使っているライブラリ、技術スタックはメモリーフォルダーに記載する
+
+
+## Testing
+
+テストコードを書くときは毎回`.cursor/rules/cording-rules/002_testing.mdc`を参照し、再確認してください
+
+
+## バージョン管理ルール
+
+`.cursor/rules/cording-rules/003_versioning.mdc`を参照
+
+
+## モノレポルール
+
+`.cursor/rules/cording-rules/004_monorepo.mdc`を参照
+
+
+## フォルダ構成ルール
+
+`.cursor/rules/cording-rules/005_folder_structure.mdc`を参照
+
+
+## 言語別
+
+### Typescript
+
+`.cursor/rules/cording-rules/006_typescript.mdc`を参照
+
+## Node.js
+
+`.cursor/rules/cording-rules/007_node_rules.mdc`を参照
+
+## フレームワーク・ツール別
+
+### React
+
+`.cursor/rules/cording-rules/008_react.mdc`を参照
+
+### Next.js
+
+`.cursor/rules/cording-rules/009_nextjs.mdc`を参照
+
+### TailwindCSS
+
+`.cursor/rules/cording-rules/010_tailwindcss.mdc`を参照
+
+### Vite
+
+`.cursor/rules/cording-rules/011_vite.mdc`を参照
+
+### Shadcn/UI
+
+`.cursor/rules/cording-rules/012_shadcn_ui.mdc`を参照

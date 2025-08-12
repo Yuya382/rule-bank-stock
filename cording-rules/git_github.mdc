@@ -1,0 +1,129 @@
+# git
+
+## ブランチ戦略
+
+プロジェクトではGit-flowベースのブランチ戦略を採用します。
+
+### 主要ブランチ
+
+-   **`main`**: 本番環境にデプロイ済みの安定版ソースコードを管理します。このブランチへの直接のコミットは禁止です。
+-   **`develop`**: 次期リリース版の開発用ブランチです。開発のベースとなります。
+
+### サポートブランチ
+
+開発作業は以下のサポートブランチで行います。
+
+1.  **`feature`ブランチ**
+    -   **目的**: 新機能開発
+    -   **分岐元**: `develop`
+    -   **マージ先**: `develop`
+    -   **命名規則**: `feature/{Issue番号}-{機能概要}` (例: `feature/123-add-login-page`)
+
+
+2.  **`fix`ブランチ**
+    -   **目的**: 既存の成果物に対するバグ修正
+    -   **分岐元**: `develop`
+    -   **マージ先**: `develop`
+    -   **命名規則**: `fix/{Issue番号}-{修正概要}` (例: `fix/789-fix-typo-on-button`)
+
+3.  **`docs`ブランチ**
+    -   **目的**: ドキュメントの更新
+    -   **分岐元**: `develop`
+    -   **マージ先**: `develop`
+    -   **命名規則**: `docs/{Issue番号}-{修正概要}` (例: `docs/456-update-documentation`)
+
+
+## コミットメッセージ
+
+コミットメッセージは以下のフォーマットで作成してください
+
+```
+{Issue番号} {タイトル}
+
+{概要}
+
+{背景}
+
+{期限}
+```
+
+
+
+## git操作
+
+ローカルでのMergeの時は`git merge`を使用してください
+
+
+
+
+# GitHub
+
+
+## Issue Template
+
+- Issueを作成するときは必ず以下のフォーマットで作成
+- Issueの内容が開発系の時はCordingにTrueが入ってるものだけ記載
+- Issueの内容が管理系の時はManagementにTrueが入ってるものだけ記載
+
+### 内容
+
+```yml
+タイトル:
+    management: true
+    cording: true
+    description: 作業タスクの概要を記載する。タイトルは必ず記載する。
+
+概要:
+    management: true
+    cording: true
+    description: 作業タスクの背景を踏まえた作業内容を記載する。
+
+背景:
+    management: true
+    cording: true
+    description: 作業タスクの背景を記載する。
+
+期限:
+    management: true
+    cording: false
+    description: 作業タスクの期限を記載する。
+
+受け入れ条件:
+    management: true
+    cording: true
+    description: 作業タスクの受け入れ条件を記載する。完了を合意するために記載
+
+テストケース:
+    management: false
+    cording: true
+    description: 作業タスクのテストケースを記載する。
+
+```
+
+### format
+
+```md
+# {タイトル}
+
+## 概要
+
+### 背景
+
+### 期限
+
+## 受け入れ条件
+
+## テストケース
+
+```
+
+
+
+
+
+
+
+
+
+
+

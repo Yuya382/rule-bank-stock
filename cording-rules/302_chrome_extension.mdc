@@ -1,0 +1,310 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# Chrome Extension ルール
+
+## 基本原則
+
+- Manifest V3 を使用
+- セキュリティを重視
+- パフォーマンスを意識
+- ユーザビリティを考慮
+
+## プロジェクト構成
+
+```
+extension/
+├── manifest.json
+├── background.js
+├── content.js
+├── popup/
+│   ├── popup.html
+│   ├── popup.js
+│   └── popup.css
+├── options/
+│   ├── options.html
+│   ├── options.js
+│   └── options.css
+└── icons/
+    ├── icon16.png
+    ├── icon48.png
+    └── icon128.png
+```
+
+## Manifest V3 設定
+
+```json
+{
+  "manifest_version": 3,
+  "name": "My Extension",
+  "version": "1.0.0",
+  "description": "Extension description",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://example.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://example.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Extension Title",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_page": "options/options.html"
+}
+```
+
+## Service Worker (Background Script)
+
+```javascript
+// background.js
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('Extension installed');
+  
+  // 初期設定
+  chrome.storage.sync.set({
+    enabled: true,
+    theme: 'light'
+  });
+});
+
+// メッセージ処理
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'getData') {
+    chrome.storage.sync.get(['data'], (result) => {
+      sendResponse({ data: result.data });
+    });
+    return true; // 非同期レスポンスを示す
+  }
+});
+
+// コンテキストメニュー
+chrome.contextMenus.create({
+  id: 'myExtension',
+  title: 'My Extension Action',
+  contexts: ['selection']
+});
+
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'myExtension') {
+    chrome.tabs.sendMessage(tab.id, {
+      action: 'processSelection',
+      text: info.selectionText
+    });
+  }
+});
+```
+
+## Content Script
+
+```javascript
+// content.js
+console.log('Content script loaded');
+
+// DOM操作
+function highlightText(text) {
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  );
+
+  const textNodes = [];
+  let node;
+  while (node = walker.nextNode()) {
+    textNodes.push(node);
+  }
+
+  textNodes.forEach(textNode => {
+    if (textNode.textContent.includes(text)) {
+      const parent = textNode.parentNode;
+      const regex = new RegExp(text, 'gi');
+      parent.innerHTML = parent.innerHTML.replace(
+        regex,
+        `<mark class="my-extension-highlight">${text}</mark>`
+      );
+    }
+  });
+}
+
+// バックグラウンドスクリプトからのメッセージ処理
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'processSelection') {
+    highlightText(request.text);
+    sendResponse({ success: true });
+  }
+});
+
+// CSS注入
+const style = document.createElement('style');
+style.textContent = `
+  .my-extension-highlight {
+    background-color: yellow;
+    padding: 2px;
+    border-radius: 3px;
+  }
+`;
+document.head.appendChild(style);
+```
+
+## Popup Script
+
+```javascript
+// popup/popup.js
+document.addEventListener('DOMContentLoaded', () => {
+  // 設定値の読み込み
+  chrome.storage.sync.get(['enabled', 'theme'], (result) => {
+    document.getElementById('enabled').checked = result.enabled;
+    document.getElementById('theme').value = result.theme;
+  });
+
+  // 設定の保存
+  document.getElementById('save').addEventListener('click', () => {
+    const enabled = document.getElementById('enabled').checked;
+    const theme = document.getElementById('theme').value;
+
+    chrome.storage.sync.set({ enabled, theme }, () => {
+      console.log('Settings saved');
+      
+      // 成功メッセージ
+      const message = document.getElementById('message');
+      message.textContent = 'Settings saved!';
+      setTimeout(() => {
+        message.textContent = '';
+      }, 2000);
+    });
+  });
+
+  // 現在のタブでアクション実行
+  document.getElementById('execute').addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        action: 'execute'
+      });
+    });
+  });
+});
+```
+
+## ストレージ管理
+
+```javascript
+// ストレージAPI の使用
+class ExtensionStorage {
+  static async set(key, value) {
+    return new Promise((resolve) => {
+      chrome.storage.sync.set({ [key]: value }, resolve);
+    });
+  }
+
+  static async get(key) {
+    return new Promise((resolve) => {
+      chrome.storage.sync.get([key], (result) => {
+        resolve(result[key]);
+      });
+    });
+  }
+
+  static async remove(key) {
+    return new Promise((resolve) => {
+      chrome.storage.sync.remove([key], resolve);
+    });
+  }
+}
+
+// 使用例
+await ExtensionStorage.set('userSettings', { theme: 'dark' });
+const settings = await ExtensionStorage.get('userSettings');
+```
+
+## 権限管理
+
+```javascript
+// 動的権限の要求
+async function requestPermission() {
+  const granted = await chrome.permissions.request({
+    permissions: ['tabs'],
+    origins: ['https://example.com/*']
+  });
+
+  if (granted) {
+    console.log('Permission granted');
+  } else {
+    console.log('Permission denied');
+  }
+}
+
+// 権限の確認
+chrome.permissions.contains({
+  permissions: ['tabs']
+}, (result) => {
+  if (result) {
+    console.log('Permission is granted');
+  }
+});
+```
+
+## デバッグとテスト
+
+```javascript
+// デバッグ用ログ
+const DEBUG = true;
+
+function log(...args) {
+  if (DEBUG) {
+    console.log('[My Extension]', ...args);
+  }
+}
+
+// エラーハンドリング
+function handleError(error) {
+  console.error('Extension error:', error);
+  // エラーレポートの送信など
+}
+
+// テスト用ヘルパー
+function isTestEnvironment() {
+  return chrome.runtime.id === 'test-extension-id';
+}
+```
+
+## ベストプラクティス
+
+1. **最小権限**: 必要最小限の権限のみ要求
+2. **CSP準拠**: Content Security Policy に従う
+3. **非同期処理**: Promise/async-await を使用
+4. **エラーハンドリング**: 適切なエラー処理
+5. **ユーザー体験**: 直感的なUI設計
+
+## 禁止事項
+
+- eval() の使用
+- インラインスクリプト
+- 不必要な権限の要求
+- 過度なDOM操作
+- プライバシーの侵害

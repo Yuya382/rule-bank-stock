@@ -1,0 +1,86 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# テストコードのルール
+
+1. プロダクトコードを書くときは必ずTDDをベースで実装をすること
+2. 製造はRed→Green→Refactorの順で実装をすること
+3. カバレッジは80%以上になって次のプロダクト実装に着手すること
+4. テストコードを書くときはAAAパターンで作成する
+
+
+## TDD
+
+- RED: テストを失敗させる
+- GREEN: テストを成功させる
+- REFACTOR: テストをリファクタリングする
+
+## AAAパターン
+
+- Arrange: テストの準備
+- Act: テストの実行
+- Assert: テストの検証
+
+## テストコード
+
+### vitest
+
+- テストコードは`test/`フォルダーに作成する
+- １ケースごとにit関数を使用する
+- テストケースを網羅するために`test.each`を使用する
+- テスト群をまとめるために`describe`を使用する
+- 群ごとのパターン網羅のために`describe.each`を使用する
+- expectはなるべく固定値になるようにテスト設計する
+- 境界値テストを実施する場合、上限値、下限値、境界値をテストする
+
+### it
+
+```ts
+import { describe, it, expect } from 'vitest';
+
+/**
+ * テストコードの例を説明するためのコメント・実際にこの世場所に関数の説明を記載してもらう
+ */
+describe('example test', () => {
+  it('should work1', () => {
+    expect(true).toBe(true);
+  });
+  it('should work2', () => {
+    expect(true).toBe(true);
+  });
+});
+
+```
+
+### describe.each
+
+- テストケースを網羅するために`test.each`を使用する
+- テスト群をまとめるために`describe`を使用する
+- 群ごとのパターン網羅のために`describe.each`を使用する
+
+
+```ts
+import { describe, expect, test } from 'vitest'
+
+describe.each([
+  { a: 1, b: 1, expected: 2 },
+  { a: 1, b: 2, expected: 3 },
+  { a: 2, b: 1, expected: 3 },
+])('describe object add($a, $b)', ({ a, b, expected }) => {
+  test(`returns ${expected}`, () => {
+    expect(a + b).toBe(expected)
+  })
+
+  test(`returned value not be greater than ${expected}`, () => {
+    expect(a + b).not.toBeGreaterThan(expected)
+  })
+
+  test(`returned value not be less than ${expected}`, () => {
+    expect(a + b).not.toBeLessThan(expected)
+  })
+})
+```

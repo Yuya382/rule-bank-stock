@@ -1,0 +1,323 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# React SPA ルール
+
+## 基本原則
+
+- Single Page Application として設計
+- React Router を使用したルーティング
+- 状態管理の適切な実装
+- パフォーマンスを重視
+
+## プロジェクト構成
+
+```
+src/
+├── components/
+│   ├── layout/
+│   ├── ui/
+│   └── common/
+├── pages/
+│   ├── Home/
+│   ├── About/
+│   └── Contact/
+├── hooks/
+├── services/
+├── store/
+├── utils/
+├── styles/
+└── App.tsx
+```
+
+## ルーティング設定
+
+```tsx
+// App.tsx
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import Layout from './components/layout/Layout';
+import LoadingSpinner from './components/ui/LoadingSpinner';
+
+// 遅延読み込み
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+
+function App() {
+  return (
+    <Router>
+      <Layout>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </Layout>
+    </Router>
+  );
+}
+
+export default App;
+```
+
+## 状態管理
+
+```tsx
+// store/useStore.ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface AppState {
+  user: User | null;
+  theme: 'light' | 'dark';
+  setUser: (user: User | null) => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+}
+
+export const useStore = create<AppState>()(
+  persist(
+    (set) => ({
+      user: null,
+      theme: 'light',
+      setUser: (user) => set({ user }),
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: 'app-storage',
+    }
+  )
+);
+```
+
+## API サービス
+
+```tsx
+// services/api.ts
+class ApiService {
+  private baseURL = process.env.REACT_APP_API_URL || 'https://api.example.com';
+
+  async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint);
+  }
+
+  async post<T>(endpoint: string, data: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+}
+
+export const apiService = new ApiService();
+```
+
+## カスタムフック
+
+```tsx
+// hooks/useApi.ts
+import { useState, useEffect } from 'react';
+import { apiService } from '../services/api';
+
+interface UseApiResult<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
+
+export function useApi<T>(endpoint: string): UseApiResult<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiService.get<T>(endpoint);
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [endpoint]);
+
+  return { data, loading, error, refetch: fetchData };
+}
+```
+
+## レイアウトコンポーネント
+
+```tsx
+// components/layout/Layout.tsx
+import { ReactNode } from 'react';
+import Header from './Header';
+import Footer from './Footer';
+import Sidebar from './Sidebar';
+
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+```
+
+## パフォーマンス最適化
+
+```tsx
+// components/VirtualizedList.tsx
+import { FixedSizeList as List } from 'react-window';
+
+interface VirtualizedListProps {
+  items: any[];
+  itemHeight: number;
+  height: number;
+}
+
+export function VirtualizedList({ items, itemHeight, height }: VirtualizedListProps) {
+  const Row = ({ index, style }: { index: number; style: any }) => (
+    <div style={style}>
+      {items[index].name}
+    </div>
+  );
+
+  return (
+    <List
+      height={height}
+      itemCount={items.length}
+      itemSize={itemHeight}
+    >
+      {Row}
+    </List>
+  );
+}
+```
+
+## エラーバウンダリー
+
+```tsx
+// components/ErrorBoundary.tsx
+import { Component, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
+  };
+
+  public static getDerivedStateFromError(): State {
+    return { hasError: true };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: any) {
+    console.error('Uncaught error:', error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-boundary">
+          <h2>Something went wrong.</h2>
+          <button onClick={() => this.setState({ hasError: false })}>
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+## PWA 対応
+
+```tsx
+// 公開フォルダに manifest.json を配置
+{
+  "name": "My React SPA",
+  "short_name": "React SPA",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+```
+
+## ベストプラクティス
+
+1. **コード分割**: React.lazy() を使用
+2. **状態管理**: 適切な状態管理ライブラリを選択
+3. **API キャッシュ**: React Query や SWR を検討
+4. **パフォーマンス**: 仮想化、メモ化を活用
+5. **エラー処理**: Error Boundary を実装
+
+## 推奨ライブラリ
+
+- React Router: ルーティング
+- Zustand/Redux: 状態管理
+- React Query: API状態管理
+- React Hook Form: フォーム管理
+- React Window: 仮想化
+- Framer Motion: アニメーション

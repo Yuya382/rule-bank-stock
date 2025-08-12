@@ -1,0 +1,361 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# Next.js SPA ルール
+
+## 基本原則
+
+- Static Export を使用してSPA化
+- App Router を活用
+- クライアントサイドナビゲーション
+- 最適化されたバンドル
+
+## 設定
+
+### next.config.js
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
+  distDir: 'dist',
+  basePath: process.env.NODE_ENV === 'production' ? '/app' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/app' : '',
+};
+
+module.exports = nextConfig;
+```
+
+## プロジェクト構成
+
+```
+app/
+├── layout.tsx
+├── page.tsx
+├── loading.tsx
+├── error.tsx
+├── not-found.tsx
+├── dashboard/
+│   ├── page.tsx
+│   └── layout.tsx
+├── profile/
+│   └── page.tsx
+├── components/
+├── hooks/
+├── lib/
+└── styles/
+```
+
+## ルートレイアウト
+
+```tsx
+// app/layout.tsx
+'use client';
+
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // SPAナビゲーション時の処理
+    console.log('Navigated to:', pathname);
+  }, [pathname]);
+
+  return (
+    <html lang="ja">
+      <body>
+        <div className="app">
+          <nav className="navbar">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/profile">Profile</a>
+          </nav>
+          <main className="main-content">
+            {children}
+          </main>
+        </div>
+      </body>
+    </html>
+  );
+}
+```
+
+## クライアントサイドナビゲーション
+
+```tsx
+// components/Navigation.tsx
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+
+export default function Navigation() {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
+
+  return (
+    <nav className="navigation">
+      <Link 
+        href="/" 
+        className={pathname === '/' ? 'active' : ''}
+      >
+        Home
+      </Link>
+      <Link 
+        href="/dashboard" 
+        className={pathname === '/dashboard' ? 'active' : ''}
+      >
+        Dashboard
+      </Link>
+      <button onClick={() => handleNavigation('/profile')}>
+        Profile
+      </button>
+    </nav>
+  );
+}
+```
+
+## 状態管理
+
+```tsx
+// hooks/useGlobalState.ts
+'use client';
+
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface GlobalState {
+  user: User | null;
+  theme: 'light' | 'dark';
+  sidebarOpen: boolean;
+  setUser: (user: User | null) => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleSidebar: () => void;
+}
+
+export const useGlobalState = create<GlobalState>()(
+  persist(
+    (set) => ({
+      user: null,
+      theme: 'light',
+      sidebarOpen: false,
+      setUser: (user) => set({ user }),
+      setTheme: (theme) => set({ theme }),
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+    }),
+    {
+      name: 'app-storage',
+    }
+  )
+);
+```
+
+## API クライアント
+
+```tsx
+// lib/apiClient.ts
+'use client';
+
+class ApiClient {
+  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://api.example.com';
+
+  async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint);
+  }
+
+  async post<T>(endpoint: string, data: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+}
+
+export const apiClient = new ApiClient();
+```
+
+## カスタムフック
+
+```tsx
+// hooks/useClientSideData.ts
+'use client';
+
+import { useState, useEffect } from 'react';
+import { apiClient } from '../lib/apiClient';
+
+interface UseClientSideDataResult<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
+
+export function useClientSideData<T>(
+  endpoint: string
+): UseClientSideDataResult<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiClient.get<T>(endpoint);
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [endpoint]);
+
+  return { data, loading, error, refetch: fetchData };
+}
+```
+
+## ページコンポーネント
+
+```tsx
+// app/dashboard/page.tsx
+'use client';
+
+import { useClientSideData } from '../../hooks/useClientSideData';
+import { useGlobalState } from '../../hooks/useGlobalState';
+
+export default function DashboardPage() {
+  const { data, loading, error } = useClientSideData<User[]>('/users');
+  const { theme, setTheme } = useGlobalState();
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div className={`dashboard ${theme}`}>
+      <h1>Dashboard</h1>
+      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+        Toggle Theme
+      </button>
+      <div className="user-list">
+        {data?.map(user => (
+          <div key={user.id} className="user-card">
+            <h3>{user.name}</h3>
+            <p>{user.email}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## ビルドとデプロイ
+
+```bash
+# 静的サイト生成
+npm run build
+
+# ビルド結果の確認
+npm run start
+
+# 静的ファイルのデプロイ
+# dist/ フォルダをWebサーバーにアップロード
+```
+
+## パフォーマンス最適化
+
+```tsx
+// components/OptimizedImage.tsx
+'use client';
+
+import { useState } from 'react';
+
+interface OptimizedImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+}
+
+export default function OptimizedImage({ src, alt, className }: OptimizedImageProps) {
+  const [loading, setLoading] = useState(true);
+
+  return (
+    <div className={`image-container ${className}`}>
+      {loading && <div className="image-placeholder">Loading...</div>}
+      <img
+        src={src}
+        alt={alt}
+        onLoad={() => setLoading(false)}
+        style={{ display: loading ? 'none' : 'block' }}
+      />
+    </div>
+  );
+}
+```
+
+## ベストプラクティス
+
+1. **Static Export**: output: 'export' を使用
+2. **Client Components**: 'use client' を適切に使用
+3. **環境変数**: NEXT_PUBLIC_ プレフィックスを使用
+4. **画像最適化**: unoptimized: true を設定
+5. **ルーティング**: Link コンポーネントを使用
+
+## 制限事項
+
+- Server Side Rendering 不可
+- API Routes 不可
+- Image Optimization 制限
+- 動的ルーティングの制限
+
+## 推奨用途
+
+- 静的サイト
+- 社内ダッシュボード
+- GitHub Pages デプロイ
+- CDN配信アプリ

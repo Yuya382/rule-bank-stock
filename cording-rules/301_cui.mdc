@@ -1,0 +1,251 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# CUI (CLI) ルール
+
+## 基本原則
+
+- ユーザーフレンドリーなインターフェース
+- 明確なコマンド体系
+- 適切なエラーハンドリング
+- 進行状況の表示
+
+## Node.js CLI 構築
+
+### 基本構成
+
+```typescript
+#!/usr/bin/env node
+import { Command } from 'commander';
+import chalk from 'chalk';
+import ora from 'ora';
+import inquirer from 'inquirer';
+
+const program = new Command();
+
+program
+  .name('my-cli')
+  .description('CLI tool for development')
+  .version('1.0.0');
+
+program
+  .command('create <name>')
+  .description('Create a new project')
+  .option('-t, --template <template>', 'Template to use')
+  .action(async (name, options) => {
+    const spinner = ora('Creating project...').start();
+    
+    try {
+      await createProject(name, options);
+      spinner.succeed(chalk.green('Project created successfully!'));
+    } catch (error) {
+      spinner.fail(chalk.red('Failed to create project'));
+      console.error(error);
+    }
+  });
+
+program.parse();
+```
+
+### インタラクティブなプロンプト
+
+```typescript
+async function askQuestions() {
+  const answers = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'projectName',
+      message: 'プロジェクト名を入力してください:',
+      validate: (input) => {
+        if (input.trim() === '') {
+          return 'プロジェクト名は必須です';
+        }
+        return true;
+      }
+    },
+    {
+      type: 'list',
+      name: 'template',
+      message: 'テンプレートを選択してください:',
+      choices: ['React', 'Vue', 'Angular', 'Vanilla']
+    },
+    {
+      type: 'confirm',
+      name: 'useTypescript',
+      message: 'TypeScriptを使用しますか?',
+      default: true
+    }
+  ]);
+
+  return answers;
+}
+```
+
+## 進行状況表示
+
+```typescript
+import { MultiBar, Presets } from 'cli-progress';
+
+const multibar = new MultiBar({
+  clearOnComplete: false,
+  hideCursor: true,
+  format: ' {bar} | {filename} | {value}/{total}'
+}, Presets.shades_classic);
+
+// 複数のプログレスバー
+const bar1 = multibar.create(200, 0, { filename: 'file1.txt' });
+const bar2 = multibar.create(200, 0, { filename: 'file2.txt' });
+
+// 進行状況の更新
+bar1.update(100);
+bar2.update(150);
+
+multibar.stop();
+```
+
+## エラーハンドリング
+
+```typescript
+import chalk from 'chalk';
+
+class CLIError extends Error {
+  constructor(message: string, public code: string) {
+    super(message);
+    this.name = 'CLIError';
+  }
+}
+
+function handleError(error: Error) {
+  if (error instanceof CLIError) {
+    console.error(chalk.red(`Error [${error.code}]: ${error.message}`));
+    process.exit(1);
+  } else {
+    console.error(chalk.red('Unexpected error:'), error);
+    process.exit(1);
+  }
+}
+
+process.on('uncaughtException', handleError);
+process.on('unhandledRejection', handleError);
+```
+
+## 設定ファイル管理
+
+```typescript
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
+
+interface Config {
+  apiUrl: string;
+  theme: 'light' | 'dark';
+  plugins: string[];
+}
+
+class ConfigManager {
+  private configPath: string;
+
+  constructor() {
+    this.configPath = path.join(os.homedir(), '.my-cli-config.json');
+  }
+
+  async load(): Promise<Config> {
+    try {
+      const data = await fs.readFile(this.configPath, 'utf8');
+      return JSON.parse(data);
+    } catch {
+      return this.getDefaultConfig();
+    }
+  }
+
+  async save(config: Config): Promise<void> {
+    await fs.writeFile(this.configPath, JSON.stringify(config, null, 2));
+  }
+
+  private getDefaultConfig(): Config {
+    return {
+      apiUrl: 'https://api.example.com',
+      theme: 'light',
+      plugins: []
+    };
+  }
+}
+```
+
+## ログ機能
+
+```typescript
+import winston from 'winston';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    }),
+    new winston.transports.File({ 
+      filename: 'cli.log',
+      level: 'debug'
+    })
+  ]
+});
+
+// 使用例
+logger.info('Starting CLI operation');
+logger.warn('This is a warning');
+logger.error('An error occurred');
+```
+
+## テスト
+
+```typescript
+import { spawn } from 'child_process';
+import { expect } from 'chai';
+
+describe('CLI Tests', () => {
+  it('should display help message', (done) => {
+    const child = spawn('node', ['dist/cli.js', '--help']);
+    let output = '';
+
+    child.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    child.on('close', (code) => {
+      expect(code).to.equal(0);
+      expect(output).to.include('Usage:');
+      done();
+    });
+  });
+});
+```
+
+## ベストプラクティス
+
+1. **明確なコマンド**: 直感的で覚えやすいコマンド名
+2. **ヘルプメッセージ**: 詳細な使用方法を提供
+3. **進行状況**: 長時間の処理では進行状況を表示
+4. **エラーメッセージ**: 具体的で解決策を示す
+5. **設定管理**: ユーザー設定の永続化
+
+## 推奨ライブラリ
+
+- commander: コマンドライン解析
+- inquirer: インタラクティブプロンプト
+- chalk: 色付きテキスト
+- ora: スピナー表示
+- cli-progress: プログレスバー
+- winston: ログ管理

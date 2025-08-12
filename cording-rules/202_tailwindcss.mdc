@@ -1,0 +1,255 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# TailwindCSSのルール
+
+## 基本原則
+
+- ユーティリティファーストのアプローチを採用
+- レスポンシブデザインを前提とする
+- 一貫性のあるデザインシステムを構築
+- カスタムCSSの使用を最小限に抑える
+
+## クラス記述ルール
+
+### 基本的なクラス順序
+
+1. レイアウト（position, display, flex, grid）
+2. ボックスモデル（margin, padding, width, height）
+3. 背景・ボーダー
+4. フォント・テキスト
+5. 色
+6. エフェクト・アニメーション
+7. レスポンシブ
+
+```jsx
+// 良い例
+<div className="flex items-center justify-between w-full max-w-md mx-auto p-4 bg-white rounded-lg shadow-md border border-gray-200 text-gray-900 hover:shadow-lg transition-shadow">
+  Content
+</div>
+
+// 悪い例（順序が混乱）
+<div className="text-gray-900 flex shadow-md p-4 bg-white items-center w-full border-gray-200 rounded-lg border justify-between max-w-md mx-auto hover:shadow-lg transition-shadow">
+  Content
+</div>
+```
+
+## レスポンシブデザイン
+
+### ブレークポイント
+
+```jsx
+// モバイルファーストアプローチ
+<div className="w-full md:w-1/2 lg:w-1/3 xl:w-1/4">
+  <div className="p-4 md:p-6 lg:p-8">
+    <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">
+      タイトル
+    </h2>
+    <p className="text-sm md:text-base lg:text-lg text-gray-600">
+      説明文
+    </p>
+  </div>
+</div>
+```
+
+### レスポンシブグリッド
+
+```jsx
+// グリッドレイアウト
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+  {items.map(item => (
+    <div key={item.id} className="bg-white rounded-lg shadow-md p-4">
+      {item.content}
+    </div>
+  ))}
+</div>
+```
+
+## コンポーネント設計
+
+### ボタンコンポーネント
+
+```jsx
+// バリエーション豊富なボタン
+const Button = ({ variant = 'primary', size = 'md', disabled = false, children, ...props }) => {
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors';
+  
+  const variants = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
+    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
+    ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-blue-500',
+    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+  };
+
+  const sizes = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-6 py-3 text-base'
+  };
+
+  const disabledClasses = 'opacity-50 cursor-not-allowed';
+
+  return (
+    <button
+      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${disabled ? disabledClasses : ''}`}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+```
+
+### カードコンポーネント
+
+```jsx
+const Card = ({ children, className = '', hover = false }) => {
+  return (
+    <div className={`
+      bg-white rounded-lg shadow-sm border border-gray-200 p-6
+      ${hover ? 'hover:shadow-md transition-shadow duration-200' : ''}
+      ${className}
+    `}>
+      {children}
+    </div>
+  );
+};
+
+const CardHeader = ({ children }) => (
+  <div className="pb-4 border-b border-gray-100 mb-4">
+    {children}
+  </div>
+);
+
+const CardTitle = ({ children }) => (
+  <h3 className="text-lg font-semibold text-gray-900">
+    {children}
+  </h3>
+);
+
+const CardContent = ({ children }) => (
+  <div className="text-gray-600">
+    {children}
+  </div>
+);
+```
+
+## カスタム設定
+
+### tailwind.config.js
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          900: '#1e3a8a',
+        },
+        secondary: {
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          900: '#111827',
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        }
+      }
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/aspect-ratio'),
+  ],
+}
+```
+
+## ダークモード対応
+
+```jsx
+// ダークモード対応
+<div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+    タイトル
+  </h1>
+  <p className="text-gray-600 dark:text-gray-300">
+    説明文
+  </p>
+  <button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded">
+    ボタン
+  </button>
+</div>
+```
+
+## アニメーション・トランジション
+
+```jsx
+// ホバーエフェクト
+<div className="transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+  <img className="w-full h-48 object-cover transition-transform duration-300 hover:scale-110" />
+</div>
+
+// ローディングアニメーション
+<div className="animate-pulse">
+  <div className="bg-gray-300 h-4 w-3/4 rounded mb-2"></div>
+  <div className="bg-gray-300 h-4 w-1/2 rounded"></div>
+</div>
+
+// フェードインアニメーション
+<div className="opacity-0 animate-fade-in">
+  コンテンツ
+</div>
+```
+
+## ベストプラクティス
+
+1. **クラス名の整理**: 長いクラス名は改行して可読性を向上
+2. **デザイントークン**: 色やスペーシングは設定ファイルで管理
+3. **コンポーネント化**: 繰り返し使用するパターンはコンポーネント化
+4. **アクセシビリティ**: focus-visible, aria-* 属性を適切に使用
+5. **パフォーマンス**: 未使用のクラスは purge で削除
+
+## 禁止事項
+
+- 過度なカスタムCSSの使用
+- !important の使用
+- インラインスタイルの使用
+- 意味のない arbitrary values の濫用
+- レスポンシブデザインの無視

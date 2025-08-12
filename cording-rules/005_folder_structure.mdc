@@ -1,0 +1,90 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# フォルダ構成ルール
+
+## 基本原則
+
+- 機能ベースのフォルダ構成を採用する
+- 階層は深くしすぎず、3-4階層程度に留める
+- コンポーネントは責務ごとに分割する
+- 設定ファイルは適切な場所に配置する
+
+## プロジェクト構成例
+
+```
+project/
+├── src/
+│   ├── components/          # 再利用可能なコンポーネント
+│   │   ├── ui/             # UIコンポーネント（Button、Input等）
+│   │   ├── layout/         # レイアウトコンポーネント
+│   │   └── common/         # 共通コンポーネント
+│   ├── features/           # 機能別フォルダ
+│   │   ├── auth/          # 認証機能
+│   │   ├── dashboard/     # ダッシュボード機能
+│   │   └── profile/       # プロフィール機能
+│   ├── hooks/             # カスタムフック
+│   ├── lib/               # ライブラリ・ユーティリティ
+│   ├── stores/            # 状態管理
+│   ├── types/             # TypeScript型定義
+│   ├── utils/             # ユーティリティ関数
+│   └── styles/            # スタイル関連
+├── public/                # 静的ファイル
+├── tests/                 # テストファイル
+└── docs/                  # ドキュメント
+```
+
+## 機能別フォルダ構成
+
+各機能フォルダは以下の構成を基本とする：
+
+```
+feature/
+├── components/            # 機能固有のコンポーネント
+├── hooks/                # 機能固有のフック
+├── utils/                # 機能固有のユーティリティ
+├── types/                # 機能固有の型定義
+├── api/                  # API呼び出し
+└── index.ts              # エントリーポイント
+```
+
+## ファイル命名規則
+
+- コンポーネント: PascalCase（UserProfile.tsx）
+- フック: camelCase（useUserProfile.ts）
+- ユーティリティ: camelCase（formatDate.ts）
+- 型定義: PascalCase（UserProfile.ts）
+- 定数: UPPER_SNAKE_CASE（API_ENDPOINTS.ts）
+
+## インポート順序
+
+1. React関連のインポート
+2. サードパーティライブラリ
+3. 内部ライブラリ・ユーティリティ
+4. 相対パス（../）のインポート
+5. 同一ディレクトリ（./）のインポート
+
+## パス設定
+
+TypeScriptのパスマッピングを使用してインポートを簡潔にする：
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/components/*": ["src/components/*"],
+      "@/features/*": ["src/features/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/lib/*": ["src/lib/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/types/*": ["src/types/*"]
+    }
+  }
+}
+```

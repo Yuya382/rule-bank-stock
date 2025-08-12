@@ -1,0 +1,24 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# モノレポ管理ルール
+
+## ライブラリ
+
+- Turborepoを利用する
+
+## フォルダ構成
+
+- apps
+   - app1
+   - app2
+   - docs
+- packages
+   - ui
+   - eslint-config-custom
+   - tsconfig-custom
+   - shadcn-ui-custom

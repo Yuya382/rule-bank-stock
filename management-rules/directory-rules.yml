@@ -1,0 +1,26 @@
+.cursor/:
+  rules/:
+    management-rules/:
+      description: "Cursorで利用するルールファイルの定義"
+      basic-rules:
+        description: 通常読み込むマスタールール
+        file-list:
+          - 000_general.mdc
+          - 001_product_requirements_document.mdc
+          - 002_product_backlog.mdc
+          - 003_statistics.mdc
+          - 004_product_ui_design.mdc
+          - 005_task_management.mdc
+          - 006_taskmanager_operation.mdc
+          - template/
+      persona-rules:
+        description: ペルソナを定義する。ユーザーにヒアリングする時はこの情報を元に整理する
+        file-list:
+          - ペルソナ.md
+          - 101_product_manager_idea_mode.mdc
+          - 201_persona_parents_chu.mdc
+          - 202_persona_parents_kou.mdc
+          - 203_persona_public_highschool_teacher.mdc
+          - 204_persona_individual_cram_school_teacher.mdc
+      project-rules:
+        description: contents:プロジェクト特有ルール

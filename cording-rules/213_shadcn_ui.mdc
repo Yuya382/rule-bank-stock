@@ -1,0 +1,147 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# shadcn/ui ルール
+
+## 基本原則
+
+- コンポーネントベースの設計
+- TailwindCSSとの統合
+- アクセシビリティを重視
+- カスタマイズ可能な設計
+
+## セットアップ
+
+```bash
+# 初期化
+npx shadcn-ui@latest init
+
+# コンポーネントの追加
+npx shadcn-ui@latest add button
+npx shadcn-ui@latest add input
+npx shadcn-ui@latest add card
+```
+
+## コンポーネント使用例
+
+### Button
+
+```tsx
+import { Button } from '@/components/ui/button';
+
+export function ButtonDemo() {
+  return (
+    <div className="space-x-2">
+      <Button>Default</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="ghost">Ghost</Button>
+      <Button variant="destructive">Destructive</Button>
+    </div>
+  );
+}
+```
+
+### Form
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+export function LoginForm() {
+  return (
+    <Card className="w-full max-w-sm">
+      <CardHeader>
+        <CardTitle>ログイン</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">メールアドレス</Label>
+            <Input id="email" type="email" placeholder="email@example.com" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">パスワード</Label>
+            <Input id="password" type="password" />
+          </div>
+          <Button className="w-full">ログイン</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## カスタマイズ
+
+### テーマ設定
+
+```css
+/* globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+  }
+}
+```
+
+### コンポーネント拡張
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'secondary' | 'custom';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export function CustomButton({ 
+  className, 
+  variant = 'default', 
+  size = 'md',
+  ...props 
+}: CustomButtonProps) {
+  return (
+    <Button
+      className={cn(
+        'transition-all duration-200',
+        variant === 'custom' && 'bg-gradient-to-r from-purple-500 to-pink-500',
+        size === 'sm' && 'px-2 py-1 text-xs',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+```
+
+## ベストプラクティス
+
+1. **適切なバリアント**: 用途に応じた適切なバリアントを使用
+2. **アクセシビリティ**: Label、aria-* 属性を適切に設定
+3. **カスタマイズ**: 必要に応じてコンポーネントを拡張
+4. **一貫性**: デザインシステムに従った統一感
+
+## 推奨コンポーネント
+
+- Button: 基本的なボタン
+- Input: フォーム入力
+- Card: コンテンツのグループ化
+- Dialog: モーダルウィンドウ
+- Toast: 通知メッセージ
+- Table: データテーブル
+- Select: ドロップダウン選択

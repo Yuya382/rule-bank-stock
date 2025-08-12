@@ -1,0 +1,28 @@
+common:
+  description: "0**:言語に依存しない共通ルール"
+  file-list:
+    - 001_master_rules.mdc
+    - 002_testing.mdc
+    - 003_versioning.mdc
+    - 004_monorepo.mdc
+    - 005_folder_structure.mdc
+language:
+  description: "1**:言語ごとのルール"
+  file-list:
+    - 100_typescript.mdc
+    - 103_node_rules.mdc
+framework:
+  description: "2**:フレームワーク・ツールごとのルール"
+  file-list:
+    - 201_react.mdc
+    - 202_tailwindcss.mdc
+    - 211_nextjs.mdc
+    - 212_vite.mdc
+    - 213_shadcn_ui.mdc
+templates:
+  description: "3**:よく作るものに対するルール"
+  file-list:
+    - 301_cui.mdc
+    - 302_chrome_extension.mdc
+    - 303_react_SPA.mdc
+    - 304_next_SPA.mdc

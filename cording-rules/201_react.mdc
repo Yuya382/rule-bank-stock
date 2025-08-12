@@ -1,0 +1,323 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# Reactルール
+
+## 基本原則
+
+- 関数コンポーネントを使用する
+- hooksを適切に使用する
+- コンポーネントの責務を明確にする
+- パフォーマンスを意識した実装を行う
+
+## コンポーネント定義
+
+### 基本的なコンポーネント
+
+```tsx
+import React from 'react';
+
+interface UserCardProps {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  onEdit?: (userId: number) => void;
+}
+
+/**
+ * ユーザー情報を表示するカードコンポーネント
+ */
+export const UserCard: React.FC<UserCardProps> = ({ user, onEdit }) => {
+  const handleEdit = () => {
+    onEdit?.(user.id);
+  };
+
+  return (
+    <div className="user-card">
+      <h3>{user.name}</h3>
+      <p>{user.email}</p>
+      {onEdit && (
+        <button onClick={handleEdit}>Edit</button>
+      )}
+    </div>
+  );
+};
+```
+
+### カスタムフック
+
+```tsx
+import { useState, useEffect } from 'react';
+
+/**
+ * APIからユーザー情報を取得するカスタムフック
+ */
+export const useUser = (userId: number) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/users/${userId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch user');
+        }
+        const userData = await response.json();
+        setUser(userData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  return { user, loading, error };
+};
+```
+
+## 状態管理
+
+### useState
+
+```tsx
+import React, { useState } from 'react';
+
+export const TodoList: React.FC = () => {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [inputValue, setInputValue] = useState('');
+
+  const addTodo = () => {
+    if (inputValue.trim()) {
+      setTodos(prev => [...prev, {
+        id: Date.now(),
+        text: inputValue,
+        completed: false
+      }]);
+      setInputValue('');
+    }
+  };
+
+  const toggleTodo = (id: number) => {
+    setTodos(prev =>
+      prev.map(todo =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  return (
+    <div>
+      <input
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        placeholder="Add new todo"
+      />
+      <button onClick={addTodo}>Add</button>
+      <ul>
+        {todos.map(todo => (
+          <li key={todo.id}>
+            <label>
+              <input
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => toggleTodo(todo.id)}
+              />
+              {todo.text}
+            </label>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+```
+
+### useReducer
+
+```tsx
+import React, { useReducer } from 'react';
+
+type State = {
+  count: number;
+  loading: boolean;
+};
+
+type Action = 
+  | { type: 'INCREMENT' }
+  | { type: 'DECREMENT' }
+  | { type: 'RESET' }
+  | { type: 'SET_LOADING'; payload: boolean };
+
+const initialState: State = {
+  count: 0,
+  loading: false
+};
+
+function counterReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'INCREMENT':
+      return { ...state, count: state.count + 1 };
+    case 'DECREMENT':
+      return { ...state, count: state.count - 1 };
+    case 'RESET':
+      return { ...state, count: 0 };
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    default:
+      return state;
+  }
+}
+
+export const Counter: React.FC = () => {
+  const [state, dispatch] = useReducer(counterReducer, initialState);
+
+  return (
+    <div>
+      <p>Count: {state.count}</p>
+      <button onClick={() => dispatch({ type: 'INCREMENT' })}>+</button>
+      <button onClick={() => dispatch({ type: 'DECREMENT' })}>-</button>
+      <button onClick={() => dispatch({ type: 'RESET' })}>Reset</button>
+    </div>
+  );
+};
+```
+
+## パフォーマンス最適化
+
+### React.memo
+
+```tsx
+import React, { memo } from 'react';
+
+interface ExpensiveComponentProps {
+  data: ComplexData;
+  onProcess: (data: ComplexData) => void;
+}
+
+/**
+ * 重い処理を行うコンポーネント
+ */
+const ExpensiveComponent: React.FC<ExpensiveComponentProps> = memo(({ data, onProcess }) => {
+  // 重い処理
+  const processedData = useMemo(() => {
+    return expensiveCalculation(data);
+  }, [data]);
+
+  return (
+    <div>
+      {processedData.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+      <button onClick={() => onProcess(data)}>Process</button>
+    </div>
+  );
+});
+
+ExpensiveComponent.displayName = 'ExpensiveComponent';
+```
+
+### useMemo と useCallback
+
+```tsx
+import React, { useMemo, useCallback } from 'react';
+
+export const OptimizedComponent: React.FC<{ items: Item[] }> = ({ items }) => {
+  // 重い計算をメモ化
+  const expensiveValue = useMemo(() => {
+    return items.reduce((sum, item) => sum + item.value, 0);
+  }, [items]);
+
+  // 関数をメモ化
+  const handleItemClick = useCallback((id: number) => {
+    console.log(`Item ${id} clicked`);
+  }, []);
+
+  return (
+    <div>
+      <p>Total: {expensiveValue}</p>
+      {items.map(item => (
+        <ItemComponent
+          key={item.id}
+          item={item}
+          onClick={handleItemClick}
+        />
+      ))}
+    </div>
+  );
+};
+```
+
+## エラーハンドリング
+
+### Error Boundary
+
+```tsx
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+/**
+ * エラーバウンダリーコンポーネント
+ */
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
+  };
+
+  public static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Uncaught error:', error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-boundary">
+          <h2>Something went wrong.</h2>
+          <p>{this.state.error?.message}</p>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+## ベストプラクティス
+
+1. **コンポーネントの分割**: 単一責任の原則を守る
+2. **Props の型定義**: 必ず interface で定義する
+3. **デフォルト値**: Props のデフォルト値を適切に設定
+4. **Key の設定**: リストレンダリング時は一意なキーを設定
+5. **副作用の管理**: useEffect を適切に使用
+6. **パフォーマンス**: 必要に応じて最適化手法を使用
+
+## 禁止事項
+
+- インラインでのオブジェクト・関数定義（パフォーマンス悪化の原因）
+- useEffect の依存配列の省略
+- 不必要な再レンダリングの発生
+- DOM 操作の直接実行（ref 使用時を除く）

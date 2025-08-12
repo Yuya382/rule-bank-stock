@@ -1,0 +1,13 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+
+
+# バージョン管理ルール
+
+## Version管理方法
+
+- セマンティックバージョニングを採用する
+- `https://semver.org/lang/ja/`に詳細が記載されている
