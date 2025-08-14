@@ -33,6 +33,7 @@ alwaysApply: true
 -   `.cursor/rules/management-rules/basic-rules/004_product_ui_design.mdc`
 -   `.cursor/rules/management-rules/basic-rules/005_task_management.mdc`
 -   `.cursor/rules/management-rules/basic-rules/006_workflow.mdc`
+-   `.cursor/rules/management-rules/basic-rules/010_draw.io.mdc`
 
 
 ### ファイル運用フロー

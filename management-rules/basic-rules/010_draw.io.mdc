@@ -1,0 +1,82 @@
+---
+description:Draw.ioのファイルを作成するときに使用するルールです。
+globs:
+alwaysApply: false
+---
+
+
+# ルール
+
+## 1. ファイルの作成
+
+ファイルの作成は、以下の形式で作成してください。
+
+```
+50.project/Flow/[日付]/[ファイル名].drawio
+```
+
+## 2. 表記方法
+```yaml
+背景色: "#FFFFFF"
+用紙サイズ: "16:9（1600x900）"
+文字:
+  Base:
+    文字色: "#303030"
+    背景色: "#000000"
+    フォントサイズ: 12
+  Bold:
+    文字色: "#303030"
+    背景色: "#000000"
+    フォントサイズ: 12
+    太字: true
+矢印:
+  Color: "#303030"
+  太さ: 1
+  角丸: 0
+  角丸の半径: 0
+四角形:
+  角丸: 0
+  角丸の半径: 0
+  Border: "#303030"
+  背景色: "#F0F0F0"
+```
+
+
+## 3. 作成ルール
+
+- 日本語は簡潔に記載
+- FlowChartは左から右に流れるように作成する
+
+### 3.1 スライド作成ルール
+
+```yaml
+テンプレート:
+  表紙:
+    description: 最初のページで使う。タイトルと日付が可変で入力
+    Path: `.cursor\rules\management-rules\basic-rules\template\draw.io\first.drawio`
+    ファイル名:  first.drawio
+    file-list:
+    変数:
+      - SLIDE TITLE: スライドのタイトルを記入　
+        DATE: 2025-08-15
+        CREATE_DATE: 作成日付
+        UPDATE_DATE: 更新日付
+  通常:
+    description: 通常のスライドで使う。タイトルと日付が可変で入力
+    Path: `.cursor\rules\management-rules\basic-rules\template\draw.io\template.drawio`
+    ファイル名: template.drawio
+    file-list:
+    変数:
+      - PAGE_TITLE: スライドのタイトルを記入　
+        Header1: ヘッダー1 スライドでの主張を記載
+        Header2: ヘッダー2 サブタイトル的に記載
+  付録:
+    description: 付録のスライドで使う。タイトルと日付が可変で入力
+    Path: `.cursor\rules\management-rules\basic-rules\template\draw.io\appendix.drawio`
+    ファイル名: appendix.drawio
+  最終ページ:
+    description: 最終ページのスライドで使う。タイトルと日付が可変で入力
+    Path: `.cursor\rules\management-rules\basic-rules\template\draw.io\last.drawio`
+    ファイル名: last.drawio
+
+```

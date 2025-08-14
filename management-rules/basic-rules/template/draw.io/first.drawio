@@ -1,0 +1,22 @@
+<mxfile host="65bd71144e">
+    <diagram id="ntJHjWkpwj2h2JEEfH1L" name="ページ1">
+        <mxGraphModel dx="929" dy="2014" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" background="#ffffff" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="%%SLIDE TITLE%%" style="text;strokeColor=none;align=center;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=64;fontColor=#303030;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="310" y="240" width="970" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="" style="rounded=0;whiteSpace=wrap;html=1;fontSize=36;fontColor=#303030;" parent="1" vertex="1">
+                    <mxGeometry y="670" width="1590" height="10" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="宮地雄也" style="text;strokeColor=none;align=right;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=40;fontColor=#303030;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1340" y="720" width="220" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="作成日：%%YYYY/MM/DD%%&lt;br&gt;最終更新日：%%YYYY/MM/DD%%" style="text;strokeColor=none;align=right;fillColor=none;html=1;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontColor=#303030;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="1040" y="790" width="540" height="80" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
