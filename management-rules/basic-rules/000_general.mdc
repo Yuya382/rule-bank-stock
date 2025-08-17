@@ -29,16 +29,13 @@ alwaysApply: true
 ### 読み込む追加ルール
 
 -   `.cursor/rules/management-rules/basic-rules/001_product_requirements_document.mdc`
--   `.cursor/rules/management-rules/basic-rules/002_product_backlog.mdc`
--   `.cursor/rules/management-rules/basic-rules/004_product_ui_design.mdc`
--   `.cursor/rules/management-rules/basic-rules/005_task_management.mdc`
--   `.cursor/rules/management-rules/basic-rules/006_workflow.mdc`
 -   `.cursor/rules/management-rules/basic-rules/010_draw.io.mdc`
+-   `.cursor/rules/management-rules/product-rules/000_product_management.mdc`
 
 
 ### ファイル運用フロー
 
--   Cursorが作成するファイルはすべて`50.project/Flow/yyyy-mm-dd`のフォルダに格納してください
+-   Cursorが作成するファイルはすべて`01.Flow/yyyy-mm-dd`のフォルダに格納してください
 -   yyyy-mm-ddは実行している日付を元に作成してください
 -   以下のコメントが来たら適切なフォルダに格納してください
     -   コメント候補：
