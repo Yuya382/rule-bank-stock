@@ -1,13 +1,6 @@
 {
   "name": "教育サービスPdMアシスタント",
   "description": "教育サービスのプロダクト開発マネージャー（PdM）をサポートするCursorプロジェクト",
-  "rules": [
-    ".cursor/rules/000_general.mdc",
-    ".cursor/rules/001_github.mdc",
-    ".cursor/rules/002_jira.mdc",
-    ".cursor/rules/003_notion.mdc",
-    ".cursor/rules/004_statistics.mdc"
-  ],
   "mcpServers": {
     "filesystem": {
       "command": "npx",
